@@ -155,17 +155,12 @@ describe Csvlint::Schema do
         expect( schema.uses_index).to eql true
     
         expect( schema.validate_header(["required", "ignored", "wrong"]) ).to eql(true)
-        expect( schema.warnings.size).to eql(2)
+        expect( schema.warnings.size).to eql(1)
 
-        expect( schema.warnings.first.type).to eql(:header_name)
-        expect( schema.warnings.first.content).to eql("ignored")
-        expect( schema.warnings.first.column).to eql(2)
-        expect( schema.warnings.first.category).to eql(:schema)
-
-        expect( schema.warnings[1].type).to eql(:header_name)
-        expect( schema.warnings[1].content).to eql("wrong")
-        expect( schema.warnings[1].column).to eql(3)
-        expect( schema.warnings[1].category).to eql(:schema)
+        expect( schema.warnings[0].type).to eql(:header_name)
+        expect( schema.warnings[0].content).to eql("wrong")
+        expect( schema.warnings[0].column).to eql(3)
+        expect( schema.warnings[0].category).to eql(:schema)
       end        
     end
   end  

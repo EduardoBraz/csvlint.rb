@@ -32,9 +32,14 @@ module Csvlint
     end
 
     def validate_header_by_index header
-      header.each_with_index do |name,i|
-        current_field = fields.find{|a| a.constraints["index"] == i+1}
-        build_warnings(:header_name, :schema, nil, i+1, name) if  current_field.nil? || current_field.name != name
+      fields.each_with_index do |field,i|
+        index = i + 1
+
+        index = field.constraints["index"] unless field.constraints["index"].nil?
+        
+        name = header[index-1]
+
+        build_warnings(:header_name, :schema, nil, index, name) if  name.nil? || field.name != name
       end
     end
         
