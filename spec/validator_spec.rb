@@ -61,6 +61,17 @@ describe Csvlint::Validator do
       expect( validator.errors.size ).to eql(0)
     end
 
+    it "should stop on reaching error limit" do
+
+      minimum = Csvlint::Field.new("test", { "minLength" => 3 } )
+      required = Csvlint::Field.new("test2", { "required" => true } )
+      schema = Csvlint::Schema.new("http://example.org/example.csv", [minimum, required] )
+      
+      stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv; header=absent"}, :body => File.read(File.join(File.dirname(__FILE__),'..','features','fixtures','invalid.csv')))
+      validator = Csvlint::Validator.new("http://example.com/example.csv", nil, schema, { :limit_errors => 1})
+      expect( validator.errors.size).to eql(1)
+    end
+
     it "should look in content-type for header=present" do
       stub_request(:get, "http://example.com/example.csv").to_return(:status => 200, :headers=>{"Content-Type" => "text/csv; header=present"}, :body => File.read(File.join(File.dirname(__FILE__),'..','features','fixtures','valid.csv')))
       validator = Csvlint::Validator.new("http://example.com/example.csv")

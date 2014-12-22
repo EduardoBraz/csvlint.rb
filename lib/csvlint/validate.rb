@@ -110,7 +110,7 @@ module Csvlint
         row = nil
         loop do
          current_line += 1
-         if (@limit_lines && current_line > @limit_lines) || (@limit_errors && @errors.size > @limit_errors)
+         if (@limit_lines && current_line > @limit_lines) || (@limit_errors && @errors.size >= @limit_errors)
            break
          end
          begin
