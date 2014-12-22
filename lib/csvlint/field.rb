@@ -3,7 +3,7 @@ module Csvlint
   class Field
     include Csvlint::ErrorCollector
 
-    attr_reader :name, :constraints, :title, :description
+    attr_reader :name, :constraints, :title, :description, :index
       
     def initialize(name, constraints={}, title=nil, description=nil)
       @name = name

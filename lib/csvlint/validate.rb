@@ -29,6 +29,7 @@ module Csvlint
             
       @csv_header = @dialect["header"]
       @limit_lines = options[:limit_lines]
+      @limit_errors = options[:limit_errors]
       @csv_options = dialect_to_csv_options(@dialect)
       @extension = parse_extension(source)
       reset
@@ -109,7 +110,7 @@ module Csvlint
         row = nil
         loop do
          current_line += 1
-         if @limit_lines && current_line > @limit_lines 
+         if (@limit_lines && current_line > @limit_lines) || (@limit_errors && @errors.size > @limit_errors)
            break
          end
          begin

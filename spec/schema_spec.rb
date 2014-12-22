@@ -81,7 +81,33 @@ describe Csvlint::Schema do
 
     #no ragged row error    
     expect( schema.errors.size ).to eql(0)        
-  end  
+  end 
+
+  context "when using index for columns" do 
+    it "should validate rows using the index defined order of columns" do
+      uses_index = true
+
+      first = Csvlint::Field.new("first", { "index" => 1 } )
+      second = Csvlint::Field.new("second", { "index" => 2 } )
+      third = Csvlint::Field.new("third", { "index" => 3, "required" => true } )
+      schema = Csvlint::Schema.new("http://example.org", [third,second,first], "", "", uses_index)
+
+      expect( schema.validate_row( ["none", "none", "", "none"], 1 ) ).to eql(false)
+      expect( schema.errors.size ).to eql(1)
+    end 
+
+    it "should warn if the data has fewer columns" do
+      uses_index = true
+
+      first = Csvlint::Field.new("first", { "index" => 1 } )
+      second = Csvlint::Field.new("second", { "index" => 2 } )
+      third = Csvlint::Field.new("third", { "index" => 5 })
+      schema = Csvlint::Schema.new("http://example.org", [third,second,first], "", "", uses_index)
+
+      expect( schema.validate_row( ["none", "none", "none"], 1 ) ).to eql(true)
+      expect( schema.warnings.size ).to eql(1)
+    end
+  end
 
   context "when validating header" do
     it "should warn if column names are different to field names" do
@@ -102,7 +128,46 @@ describe Csvlint::Schema do
       expect( schema.validate_header(["minimum", "Required"]) ).to eql(true)
       expect( schema.warnings.size ).to eql(1)
 
+    end   
+
+    it "should warn if extra header columns" do
+      minimum = Csvlint::Field.new("minimum", { "minLength" => 3 } )
+      required = Csvlint::Field.new("required", { "required" => true } )
+      schema = Csvlint::Schema.new("http://example.org", [minimum, required] )
+  
+      expect( schema.validate_header(["minimum", "required", "extra"]) ).to eql(true)
+      expect( schema.warnings.size ).to eql(1)
+      expect( schema.warnings.first.type).to eql(:header_name)
+      expect( schema.warnings.first.content).to eql("extra")
+      expect( schema.warnings.first.column).to eql(3)
+      expect( schema.warnings.first.category).to eql(:schema)
     end        
+
+    context "that uses index" do
+      it "should warn if the index of the column in file is different form schema" do
+
+        uses_index = true
+
+        minimum = Csvlint::Field.new("extra", { "index" => 3 } )
+        required = Csvlint::Field.new("required", { "index" => 1 } )
+        schema = Csvlint::Schema.new("http://example.org", [minimum, required], "", "", uses_index)
+
+        expect( schema.uses_index).to eql true
+    
+        expect( schema.validate_header(["required", "ignored", "wrong"]) ).to eql(true)
+        expect( schema.warnings.size).to eql(2)
+
+        expect( schema.warnings.first.type).to eql(:header_name)
+        expect( schema.warnings.first.content).to eql("ignored")
+        expect( schema.warnings.first.column).to eql(2)
+        expect( schema.warnings.first.category).to eql(:schema)
+
+        expect( schema.warnings[1].type).to eql(:header_name)
+        expect( schema.warnings[1].content).to eql("wrong")
+        expect( schema.warnings[1].column).to eql(3)
+        expect( schema.warnings[1].category).to eql(:schema)
+      end        
+    end
   end  
   
   context "when parsing JSON Tables" do
@@ -112,6 +177,7 @@ describe Csvlint::Schema do
       {
           "title": "Schema title",
           "description": "schema", 
+          "uses_index": "true", 
           "fields": [
               { "name": "ID", "constraints": { "required": true }, "title": "id", "description": "house identifier" },
               { "name": "Price", "constraints": { "required": true, "minLength": 1 } },
@@ -129,6 +195,7 @@ describe Csvlint::Schema do
       expect( schema.uri ).to eql("http://example.org")
       expect( schema.title ).to eql("Schema title")
       expect( schema.description ).to eql("schema")
+      expect( schema.uses_index ).to eql("true")
       expect( schema.fields.length ).to eql(3)
       expect( schema.fields[0].name ).to eql("ID")
       expect( schema.fields[0].constraints["required"] ).to eql(true)
