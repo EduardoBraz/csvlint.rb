@@ -88,7 +88,7 @@ describe Csvlint::Schema do
       uses_index = true
 
       first = Csvlint::Field.new("first", { "index" => 1 } )
-      second = Csvlint::Field.new("second", { "index" => 2 } )
+      second = Csvlint::Field.new("second" )
       third = Csvlint::Field.new("third", { "index" => 3, "required" => true } )
       schema = Csvlint::Schema.new("http://example.org", [third,second,first], "", "", uses_index)
 

@@ -55,9 +55,15 @@ module Csvlint
 
 
       fields.each_with_index do |field,i|
-        index = field.constraints["index"]-1
-        value = values[index] || ""
-        result = field.validate_column(value, row, index+1)
+
+        index = i + 1
+
+        index = field.constraints["index"] unless field.constraints["index"].nil?
+
+        value = values[index-1] || ""
+        
+        result = field.validate_column(value, row, index-1)
+
         @errors += fields[i].errors
         @warnings += fields[i].warnings        
       end
@@ -89,7 +95,7 @@ module Csvlint
 
     def verify_columns_by_index(values, row=nil)
       fields.each do |field|
-        index = field.constraints["index"]
+        index = field.constraints["index"] || 1
         build_warnings(:missing_column, :schema, row, index) if values[index-1].nil?
       end
     end
