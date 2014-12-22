@@ -62,7 +62,7 @@ module Csvlint
 
         value = values[index-1] || ""
         
-        result = field.validate_column(value, row, index-1)
+        result = field.validate_column(value, row, index)
 
         @errors += fields[i].errors
         @warnings += fields[i].warnings        
