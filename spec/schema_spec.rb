@@ -110,37 +110,36 @@ describe Csvlint::Schema do
   end
 
   context "when validating header" do
-    it "should warn if column names are different to field names" do
-      minimum = Csvlint::Field.new("minimum", { "minLength" => 3 } )
-      required = Csvlint::Field.new("required", { "required" => true } )
+    it "should show error if column names are different to field names" do
+      minimum = Csvlint::Field.new("minimum", { "minLength" => 3, "required" => true } )
+      required = Csvlint::Field.new("required", { "rquired" => true} )
       schema = Csvlint::Schema.new("http://example.org", [minimum, required] )
   
       expect( schema.validate_header(["minimum", "required"]) ).to eql(true)
-      expect( schema.warnings.size ).to eql(0)
+      expect( schema.errors.size ).to eql(0)
       
-      expect( schema.validate_header(["wrong", "required"]) ).to eql(true)
-      expect( schema.warnings.size ).to eql(1)
-      expect( schema.warnings.first.type).to eql(:header_name)
-      expect( schema.warnings.first.content).to eql("wrong")
-      expect( schema.warnings.first.column).to eql(1)
-      expect( schema.warnings.first.category).to eql(:schema)
-      
-      expect( schema.validate_header(["minimum", "Required"]) ).to eql(true)
-      expect( schema.warnings.size ).to eql(1)
-
+      expect( schema.validate_header(["wrong", "required"]) ).to eql(false)
+      expect( schema.errors.size ).to eql(1)
+      expect( schema.errors.first.type).to eql(:header_name)
+      expect( schema.errors.first.content).to eql("wrong")
+      expect( schema.errors.first.column).to eql(1)
+      expect( schema.errors.first.category).to eql(:schema)
     end   
 
-    it "should warn if extra header columns" do
+    it "should not be case sensitive to header names" do
+      minimum = Csvlint::Field.new("minimum", { "minLength" => 3, "required" => true } )
+      required = Csvlint::Field.new("rEqUirEd", { "required" => true} )
+      schema = Csvlint::Schema.new("http://example.org", [minimum, required] ) 
+
+      expect( schema.validate_header(["minimum", "Required"]) ).to eql(true)
+    end
+
+    it "should not validate extra header columns" do
       minimum = Csvlint::Field.new("minimum", { "minLength" => 3 } )
       required = Csvlint::Field.new("required", { "required" => true } )
       schema = Csvlint::Schema.new("http://example.org", [minimum, required] )
   
       expect( schema.validate_header(["minimum", "required", "extra"]) ).to eql(true)
-      expect( schema.warnings.size ).to eql(1)
-      expect( schema.warnings.first.type).to eql(:header_name)
-      expect( schema.warnings.first.content).to eql("extra")
-      expect( schema.warnings.first.column).to eql(3)
-      expect( schema.warnings.first.category).to eql(:schema)
     end        
 
     context "that uses index" do
@@ -154,13 +153,13 @@ describe Csvlint::Schema do
 
         expect( schema.uses_index).to eql true
     
-        expect( schema.validate_header(["required", "ignored", "wrong"]) ).to eql(true)
-        expect( schema.warnings.size).to eql(1)
+        expect( schema.validate_header(["required", "ignored", "wrong"]) ).to eql(false)
+        expect( schema.errors.size).to eql(1)
 
-        expect( schema.warnings[0].type).to eql(:header_name)
-        expect( schema.warnings[0].content).to eql("wrong")
-        expect( schema.warnings[0].column).to eql(3)
-        expect( schema.warnings[0].category).to eql(:schema)
+        expect( schema.errors[0].type).to eql(:header_name)
+        expect( schema.errors[0].content).to eql("wrong")
+        expect( schema.errors[0].column).to eql(3)
+        expect( schema.errors[0].category).to eql(:schema)
       end        
     end
   end  

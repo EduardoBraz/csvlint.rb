@@ -26,8 +26,10 @@ module Csvlint
     end
 
     def validate_header_by_order header
-      header.each_with_index do |name,i|     
-        build_warnings(:header_name, :schema, nil, i+1, name) if fields[i].nil? || fields[i].name != name
+      fields.each_with_index do |field,i|
+        required = field.constraints["required"] || false
+        name = header[i]
+        build_errors(:header_name, :schema, nil, i+1, name) if required && (name.nil? || name.downcase != field.name.downcase)
       end
     end
 
@@ -39,7 +41,7 @@ module Csvlint
         
         name = header[index-1]
 
-        build_warnings(:header_name, :schema, nil, index, name) if  name.nil? || field.name != name
+        build_errors(:header_name, :schema, nil, index, name) if  name.nil? || field.name.downcase != name.downcase
       end
     end
         
