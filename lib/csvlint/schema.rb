@@ -4,14 +4,15 @@ module Csvlint
     
     include Csvlint::ErrorCollector
     
-    attr_reader :uri, :fields, :title, :description, :uses_index
+    attr_reader :uri, :fields, :title, :description, :uses_index, :validate_header_name
     
-    def initialize(uri, fields=[], title=nil, description=nil, uses_index=false)
+    def initialize(uri, fields=[], title=nil, description=nil, uses_index=false, validate_header_name=false)
       @uri = uri
       @fields = fields
       @title = title
       @description = description
       @uses_index = uses_index
+      @validate_header_name = validate_header_name
       reset
     end
 
@@ -41,7 +42,14 @@ module Csvlint
         
         name = header[index-1]
 
-        build_errors(:header_name, :schema, nil, index, name) if  name.nil? || field.name.downcase != name.downcase
+        if  name.nil? 
+          build_errors(:missing_value, :schema, nil, index, name)
+        else
+          if @validate_header_name && (field.name.downcase != name.downcase)
+            build_errors(:header_name, :schema, nil, index, name)
+          end
+        end
+
       end
     end
         

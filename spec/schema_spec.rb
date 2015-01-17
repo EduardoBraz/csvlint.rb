@@ -146,10 +146,11 @@ describe Csvlint::Schema do
       it "should warn if the index of the column in file is different form schema" do
 
         uses_index = true
-
+        validate_header_name = true
+        
         minimum = Csvlint::Field.new("extra", { "index" => 3 } )
         required = Csvlint::Field.new("required", { "index" => 1 } )
-        schema = Csvlint::Schema.new("http://example.org", [minimum, required], "", "", uses_index)
+        schema = Csvlint::Schema.new("http://example.org", [minimum, required], "", "", uses_index, validate_header_name)
 
         expect( schema.uses_index).to eql true
     
