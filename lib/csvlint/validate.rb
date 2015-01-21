@@ -102,7 +102,6 @@ module Csvlint
       begin
         wrapper = WrappedIO.new( io )
         csv = CSV.new( wrapper, @csv_options )
-        @data = []
         @line_breaks = csv.row_sep
         if @line_breaks != "\r\n"
           build_info_messages(:nonrfc_line_breaks, :structure)
@@ -116,7 +115,6 @@ module Csvlint
          begin
            wrapper.reset_line
            row = csv.shift
-           @data << row
            if row             
              if current_line == 1 && header?
                row = row.reject {|r| r.blank? }
