@@ -30,6 +30,7 @@ module Csvlint
       @csv_header = @dialect["header"]
       @limit_lines = options[:limit_lines]
       @limit_errors = options[:limit_errors]
+      @use_data = options[:use_data].nil? ? true : options[:use_data]
       @csv_options = dialect_to_csv_options(@dialect)
       @extension = parse_extension(source)
       reset
@@ -102,6 +103,7 @@ module Csvlint
       begin
         wrapper = WrappedIO.new( io )
         csv = CSV.new( wrapper, @csv_options )
+        @data = []
         @line_breaks = csv.row_sep
         if @line_breaks != "\r\n"
           build_info_messages(:nonrfc_line_breaks, :structure)
@@ -115,6 +117,10 @@ module Csvlint
          begin
            wrapper.reset_line
            row = csv.shift
+           if @use_data 
+            @data << row
+           end
+           
            if row             
              if current_line == 1 && header?
                row = row.reject {|r| r.blank? }
